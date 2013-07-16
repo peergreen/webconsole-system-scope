@@ -5,18 +5,25 @@ import com.peergreen.webconsole.ExtensionPoint;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.scope.system.SystemTab;
+import com.peergreen.webconsole.scope.system.extensions.data.ServiceReferenceItem;
+import com.vaadin.data.Container;
+import com.vaadin.data.Property;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.filter.Or;
+import com.vaadin.data.util.filter.SimpleStringFilter;
+import com.vaadin.event.FieldEvents;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.ShortcutAction;
+import com.vaadin.event.ShortcutListener;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static java.lang.String.format;
 
 /**
  * @author Mohammed Boukada
@@ -26,8 +33,13 @@ import static java.lang.String.format;
 @SystemTab("OSGi Services")
 public class ServiceViewer extends VerticalLayout {
 
+    public static final String SERVICE_ID_COLUMN = "serviceId";
+    public static final String INTERFACES_COLUMN = "interfaces";
+    public static final String BUNDLE_INFO_COLUMN = "bundleInfo";
     @Inject
     private BundleContext bundleContext;
+
+    private BeanItemContainer<ServiceReferenceItem> data = new BeanItemContainer<>(ServiceReferenceItem.class);
     private Table table;
 
     @Ready
@@ -35,47 +47,112 @@ public class ServiceViewer extends VerticalLayout {
         setMargin(true);
         setSpacing(true);
 
-        table = new Table();
-
-        table.addContainerProperty("Service ID", Long.class, null);
-        table.addContainerProperty("Interfaces", String.class, null);
-        table.addContainerProperty("Bundle", String.class, null);
-
-        table.setSizeFull();
-        table.setSortContainerPropertyId("service-id");
-        table.setSortAscending(true);
-        table.setImmediate(true);
-
-        refreshTable();
-
-        addComponent(table);
+        initHeader();
+        initTable();
+        initServiceReferences();
     }
 
-    private void refreshTable() {
+    private void initHeader() {
+        HorizontalLayout header = new HorizontalLayout();
+        header.setWidth("100%");
+        header.setSpacing(true);
+        header.setMargin(true);
+
+        Label title = new Label("OSGi Services");
+        title.addStyleName("h1");
+        title.setSizeUndefined();
+        header.addComponent(title);
+        header.setComponentAlignment(title, Alignment.MIDDLE_LEFT);
+
+        final TextField filter = new TextField();
+        filter.addTextChangeListener(new FieldEvents.TextChangeListener() {
+            @Override
+            public void textChange(final FieldEvents.TextChangeEvent event) {
+                data.removeAllContainerFilters();
+                Container.Filter or = new Or(
+                        new SimpleStringFilter(SERVICE_ID_COLUMN, event.getText().trim(), true, false),
+                        new SimpleStringFilter(INTERFACES_COLUMN, event.getText().trim(), true, false),
+                        new SimpleStringFilter(BUNDLE_INFO_COLUMN, event.getText().trim(), true, false)
+                );
+
+                data.addContainerFilter(or);
+            }
+        });
+
+        filter.setInputPrompt("Filter");
+        filter.addShortcutListener(new ShortcutListener("Clear",
+                                                        ShortcutAction.KeyCode.ESCAPE, null) {
+            @Override
+            public void handleAction(Object sender, Object target) {
+                filter.setValue("");
+                data.removeAllContainerFilters();
+            }
+        });
+        header.addComponent(filter);
+        header.setExpandRatio(filter, 1);
+        header.setComponentAlignment(filter, Alignment.MIDDLE_LEFT);
+
+        // Store the header in the vertical layout (this)
+        addComponent(header);
+    }
+
+    private void initTable() {
+
+        table = new Table();
+
+        table.setColumnHeader(SERVICE_ID_COLUMN, "Service ID");
+        table.setColumnHeader(INTERFACES_COLUMN, "Interfaces");
+        table.setColumnHeader(BUNDLE_INFO_COLUMN, "Bundle");
+
+        table.setSizeFull();
+        table.setSortContainerPropertyId("serviceId");
+        table.setSortAscending(true);
+        //table.setSelectable(true);
+        table.setColumnCollapsingAllowed(true);
+        table.setColumnReorderingAllowed(true);
+        table.setColumnWidth("serviceId", 70);
+        table.setColumnWidth(BUNDLE_INFO_COLUMN, 300);
+
+        table.setColumnAlignment("serviceId", Table.Align.CENTER);
+
+        table.setContainerDataSource(data);
+        table.setImmediate(true);
+        table.setVisibleColumns(new Object[] {SERVICE_ID_COLUMN, INTERFACES_COLUMN, BUNDLE_INFO_COLUMN});
+
+        table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
+            @Override
+            public void itemClick(final ItemClickEvent event) {
+                if (event.isDoubleClick()) {
+                    Property<Boolean> property = event.getItem().getItemProperty("opened");
+                    if (property != null) {
+                        // Gives details about service properties
+                        Boolean old = property.getValue();
+                        property.setValue(!old);
+                        table.refreshRowCache();
+                    }
+                }
+            }
+        });
+
+        addComponent(table);
+        // Magic number: use all the empty space
+        setExpandRatio(table, 1.5f);
+
+    }
+
+    private void initServiceReferences() {
         Bundle[] bundles = bundleContext.getBundles();
         table.removeAllItems();
 
-        int i = 1;
         for (Bundle bundle : bundles) {
             if (bundle.getRegisteredServices() != null) {
                 for (ServiceReference<?> reference : bundle.getRegisteredServices()) {
-                    table.addItem(
-                            new Object[] {
-                                    reference.getProperty(Constants.SERVICE_ID),
-                                    getInterfaces(reference),
-                                    format("%s (%d)", bundle.getSymbolicName(), bundle.getBundleId())
-                            }, i++);
+                    data.addBean(new ServiceReferenceItem(reference));
                 }
             }
         }
         table.sort();
     }
 
-    String getInterfaces(ServiceReference<?> reference) {
-        List<String> interfaces = new ArrayList<>();
-        String[] classes = (String[]) reference.getProperty(Constants.OBJECTCLASS);
-        interfaces.addAll(Arrays.asList(classes));
-        return interfaces.toString();
-    }
 
 }
