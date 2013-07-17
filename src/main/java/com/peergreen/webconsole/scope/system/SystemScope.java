@@ -9,7 +9,7 @@ import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.Scope;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.Unlink;
-import com.peergreen.webconsole.tabs.DefaultTab;
+import com.peergreen.webconsole.vaadin.DefaultTab;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.TabSheet;
 
