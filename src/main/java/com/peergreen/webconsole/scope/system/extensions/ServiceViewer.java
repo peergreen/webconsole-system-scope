@@ -110,7 +110,7 @@ public class ServiceViewer extends VerticalLayout {
         //table.setSelectable(true);
         table.setColumnCollapsingAllowed(true);
         table.setColumnReorderingAllowed(true);
-        table.setColumnWidth("serviceId", 70);
+        table.setColumnWidth(SERVICE_ID_COLUMN, 70);
         table.setColumnWidth(BUNDLE_INFO_COLUMN, 300);
 
         table.setColumnAlignment("serviceId", Table.Align.CENTER);
