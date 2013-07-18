@@ -10,7 +10,7 @@
   </parent>
   <artifactId>system-scope</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <name>Peergreen Web Console :: System Scope and its related Extensions</name>
+  <name>Peergreen Web Console :: System Scope</name>
   <packaging>bundle</packaging>
 
   <dependencies>
