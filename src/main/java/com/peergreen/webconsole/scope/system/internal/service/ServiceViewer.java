@@ -28,7 +28,7 @@ import org.osgi.framework.ServiceReference;
  * @author Mohammed Boukada
  */
 @Extension
-@ExtensionPoint("com.peergreen.webconsole.scope.system.SystemScope.tab")
+@ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
 @SystemTab("OSGi Services")
 public class ServiceViewer extends VerticalLayout {
 

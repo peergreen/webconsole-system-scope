@@ -18,7 +18,7 @@ import org.osgi.framework.BundleException;
  * @author Mohammed Boukada
  */
 @Extension
-@ExtensionPoint("com.peergreen.webconsole.scope.system.SystemScope.tab")
+@ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
 @SystemTab("OSGi Bundles")
 public class BundleViewer extends VerticalLayout {
 
