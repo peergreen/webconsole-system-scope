@@ -1,4 +1,4 @@
-package com.peergreen.webconsole.scope.system.extensions;
+package com.peergreen.webconsole.scope.system.internal.bundle;
 
 import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;

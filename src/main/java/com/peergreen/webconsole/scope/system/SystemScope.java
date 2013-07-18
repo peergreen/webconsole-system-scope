@@ -23,13 +23,13 @@ import java.util.Dictionary;
 @Scope("system")
 public class SystemScope extends TabSheet {
 
-    DefaultTab defaultTab = new DefaultTab(this);
+    private DefaultTab defaultTab = new DefaultTab(this);
 
     @Inject
-    UIContext uiContext;
+    private UIContext uiContext;
 
     @Inject
-    INotifierService notifierService;
+    private INotifierService notifierService;
 
     @Ready
     public void init() {

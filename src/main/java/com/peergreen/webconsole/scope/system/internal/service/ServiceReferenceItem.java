@@ -1,4 +1,4 @@
-package com.peergreen.webconsole.scope.system.extensions.data;
+package com.peergreen.webconsole.scope.system.internal.service;
 
 import static java.lang.String.format;
 

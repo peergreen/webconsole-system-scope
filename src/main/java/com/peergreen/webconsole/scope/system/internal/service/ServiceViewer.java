@@ -1,11 +1,10 @@
-package com.peergreen.webconsole.scope.system.extensions;
+package com.peergreen.webconsole.scope.system.internal.service;
 
 import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.scope.system.SystemTab;
-import com.peergreen.webconsole.scope.system.extensions.data.ServiceReferenceItem;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItemContainer;
@@ -36,6 +35,7 @@ public class ServiceViewer extends VerticalLayout {
     public static final String SERVICE_ID_COLUMN = "serviceId";
     public static final String INTERFACES_COLUMN = "interfaces";
     public static final String BUNDLE_INFO_COLUMN = "bundleInfo";
+
     @Inject
     private BundleContext bundleContext;
 
@@ -113,7 +113,7 @@ public class ServiceViewer extends VerticalLayout {
         table.setColumnWidth(SERVICE_ID_COLUMN, 70);
         table.setColumnWidth(BUNDLE_INFO_COLUMN, 300);
 
-        table.setColumnAlignment("serviceId", Table.Align.CENTER);
+        table.setColumnAlignment(SERVICE_ID_COLUMN, Table.Align.CENTER);
 
         table.setContainerDataSource(data);
         table.setImmediate(true);
