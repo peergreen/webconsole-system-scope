@@ -35,6 +35,7 @@ public class ServiceViewer extends VerticalLayout {
     public static final String SERVICE_ID_COLUMN = "serviceId";
     public static final String INTERFACES_COLUMN = "interfaces";
     public static final String BUNDLE_INFO_COLUMN = "bundleInfo";
+    public static final String OPENED_COLUMN = "opened";
 
     @Inject
     private BundleContext bundleContext;
@@ -105,7 +106,7 @@ public class ServiceViewer extends VerticalLayout {
         table.setColumnHeader(BUNDLE_INFO_COLUMN, "Bundle");
 
         table.setSizeFull();
-        table.setSortContainerPropertyId("serviceId");
+        table.setSortContainerPropertyId(SERVICE_ID_COLUMN);
         table.setSortAscending(true);
         //table.setSelectable(true);
         table.setColumnCollapsingAllowed(true);
@@ -123,7 +124,7 @@ public class ServiceViewer extends VerticalLayout {
             @Override
             public void itemClick(final ItemClickEvent event) {
                 if (event.isDoubleClick()) {
-                    Property<Boolean> property = event.getItem().getItemProperty("opened");
+                    Property<Boolean> property = event.getItem().getItemProperty(OPENED_COLUMN);
                     if (property != null) {
                         // Gives details about service properties
                         Boolean old = property.getValue();
