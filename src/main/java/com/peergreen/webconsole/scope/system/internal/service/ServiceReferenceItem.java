@@ -11,6 +11,8 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 
 /**
@@ -43,27 +45,21 @@ public class ServiceReferenceItem {
         return format("%s (%d)", bundle.getSymbolicName(), bundle.getBundleId());
     }
 
-    public Label getInterfaces() {
+    public Component getInterfaces() {
         if (!opened) {
             return new Label(searchInterfaces());
         } else {
-            StringBuilder sb = new StringBuilder();
+            GridLayout layout = new GridLayout(3, 1);
 
             for (String name : reference.getPropertyKeys()) {
-                printServicePropery(sb, name, reference.getProperty(name));
+                layout.addComponent(new Label(format("<b>%s</b>", name), ContentMode.HTML));
+                layout.addComponent(new Label("&nbsp;", ContentMode.HTML));
+                layout.addComponent(new Label(convert(reference.getProperty(name)).toString(), ContentMode.PREFORMATTED));
+                layout.newLine();
             }
 
-            return new Label(sb.toString(), ContentMode.HTML);
+            return layout;
         }
-    }
-
-    private void printServicePropery(final StringBuilder sb, final String name, final Object value) {
-        sb.append("<b>");
-        sb.append(name);
-        sb.append("</b>");
-        sb.append(" ");
-        sb.append(convert(value));
-        sb.append("<br/>");
     }
 
     private Object convert(final Object value) {
