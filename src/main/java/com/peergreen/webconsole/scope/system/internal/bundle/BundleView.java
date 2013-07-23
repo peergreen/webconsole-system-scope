@@ -7,6 +7,10 @@ import com.peergreen.webconsole.ISecurityManager;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.scope.system.SystemTab;
+import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundleClickListener;
+import com.peergreen.webconsole.scope.system.internal.bundle.actions.StopBundleClickListener;
+import com.peergreen.webconsole.scope.system.internal.bundle.actions.UninstallBundleClickListener;
+import com.peergreen.webconsole.scope.system.internal.bundle.actions.UpdateBundleClickListener;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
@@ -14,14 +18,16 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.filter.Or;
 import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.event.FieldEvents;
+import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.ClassResource;
-import com.vaadin.server.Page;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -30,7 +36,6 @@ import org.apache.felix.ipojo.annotations.Invalidate;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleException;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
@@ -57,6 +62,8 @@ public class BundleView extends VerticalLayout {
     private BeanItemContainer<BundleItem> data = new BeanItemContainer<>(BundleItem.class);
     private BundleTracker<BeanItem<BundleItem>> tracker;
 
+    private TabSheet tabSheet = new TabSheet();
+
     @Ready
     public void createView() {
         setMargin(true);
@@ -68,13 +75,13 @@ public class BundleView extends VerticalLayout {
         */
 
         HorizontalLayout header = new HorizontalLayout();
-        header.setWidth("100%");
+//        header.setWidth("100%");
         header.setSpacing(true);
         header.setMargin(true);
 
         Label title = new Label("OSGi Bundles");
         title.addStyleName("h1");
-        title.setSizeUndefined();
+//        title.setSizeUndefined();
         header.addComponent(title);
         header.setComponentAlignment(title, Alignment.MIDDLE_LEFT);
 
@@ -111,6 +118,8 @@ public class BundleView extends VerticalLayout {
         // Store the header in the vertical layout (this)
         addComponent(header);
 
+        addComponent(tabSheet);
+
         table = new Table() {
             @Override
             protected String formatPropertyValue(final Object rowId, final Object colId, final Property<?> property) {
@@ -144,9 +153,9 @@ public class BundleView extends VerticalLayout {
                 BeanItem<BundleItem> item = (BeanItem<BundleItem>) source.getContainerDataSource().getItem(itemId);
                 Bundle bundle = item.getBean().getBundle();
                 int state = bundle.getState();
-                if (is(state, Bundle.INSTALLED) || is(state, Bundle.RESOLVED)) {
+                if (BundleHelper.isState(bundle, Bundle.INSTALLED) || BundleHelper.isState(bundle, Bundle.RESOLVED)) {
                     Button changeState = new Button();
-                    changeState.addClickListener(new StartBundleClickListener(item.getBean().getBundle()));
+                    changeState.addClickListener(new StartBundleClickListener(item.getBean().getBundle(), notifierService));
                     //changeState.addStyleName("no-padding");
                     changeState.setCaption("Start");
                     //changeState.setIcon(new ClassResource(BundleViewer.class, "/images/go-next.png"));
@@ -155,9 +164,9 @@ public class BundleView extends VerticalLayout {
                     }
                     layout.addComponent(changeState);
                 }
-                if (is(state, Bundle.ACTIVE)) {
+                if (BundleHelper.isState(bundle, Bundle.ACTIVE)) {
                     Button changeState = new Button();
-                    changeState.addClickListener(new StopBundleClickListener(item.getBean().getBundle()));
+                    changeState.addClickListener(new StopBundleClickListener(item.getBean().getBundle(), notifierService));
                     //changeState.addStyleName("no-padding");
                     changeState.setCaption("Stop");
                     if (!securityManager.isUserInRole("admin")) {
@@ -169,7 +178,7 @@ public class BundleView extends VerticalLayout {
 
                 // Update
                 Button update = new Button();
-                update.addClickListener(new UpdateBundleClickListener(item.getBean().getBundle()));
+                update.addClickListener(new UpdateBundleClickListener(item.getBean().getBundle(), notifierService));
                 //update.addStyleName("no-padding");
                 update.setCaption("Update");
                 if (!securityManager.isUserInRole("admin")) {
@@ -180,7 +189,7 @@ public class BundleView extends VerticalLayout {
 
                 // Trash
                 Button trash = new Button();
-                trash.addClickListener(new UninstallBundleClickListener(item.getBean().getBundle()));
+                trash.addClickListener(new UninstallBundleClickListener(item.getBean().getBundle(), notifierService));
                 //trash.addStyleName("no-padding");
                 trash.setCaption("Delete");
                 if (!securityManager.isUserInRole("admin")) {
@@ -195,13 +204,27 @@ public class BundleView extends VerticalLayout {
 
         table.setVisibleColumns("bundleId", "bundleName", "version", "state", "actions");
 
-        createBundleTracker();
-        addComponent(table);
-        setExpandRatio(table, 1.5f);
-    }
+        table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
+            @Override
+            public void itemClick(final ItemClickEvent event) {
+                if (event.isDoubleClick()) {
+                    BeanItem<BundleItem> item = (BeanItem<BundleItem>) table.getContainerDataSource().getItem(event.getItemId());
+                    Bundle bundle = item.getBean().getBundle();
 
-    private boolean is(final int state, final int flag) {
-        return (state & flag) == flag;
+                    TabSheet.Tab tab = tabSheet.addTab(new BundleTab(bundle, notifierService),
+                                                       "Bundle " + bundle.getBundleId(),
+                                                       new ClassResource(BundleView.class, "/images/22x22/package-x-generic.png"));
+                    tab.setClosable(true);
+                    tabSheet.setSelectedTab(tab);
+                }
+            }
+        });
+
+        createBundleTracker();
+
+        tabSheet.setSizeFull();
+        tabSheet.addTab(table, "Bundles", new ClassResource(BundleView.class, "/images/22x22/user-home.png"));
+        setExpandRatio(tabSheet, 1.5f);
     }
 
     @Invalidate
@@ -259,75 +282,4 @@ public class BundleView extends VerticalLayout {
         }
     }
 
-    private class StartBundleClickListener implements Button.ClickListener {
-
-        private final Bundle bundle;
-
-        public StartBundleClickListener(final Bundle bundle) {
-            this.bundle = bundle;
-        }
-
-        @Override
-        public void buttonClick(final Button.ClickEvent event) {
-            try {
-                bundle.start(Bundle.START_ACTIVATION_POLICY);
-            } catch (BundleException e) {
-                notifierService.addNotification(e.getMessage());
-            }
-        }
-    }
-
-    private class StopBundleClickListener implements Button.ClickListener {
-
-        private final Bundle bundle;
-
-        public StopBundleClickListener(final Bundle bundle) {
-            this.bundle = bundle;
-        }
-
-        @Override
-        public void buttonClick(final Button.ClickEvent event) {
-            try {
-                bundle.stop();
-            } catch (BundleException e) {
-                notifierService.addNotification(e.getMessage());
-            }
-        }
-    }
-
-    private class UninstallBundleClickListener implements Button.ClickListener {
-
-        private final Bundle bundle;
-
-        public UninstallBundleClickListener(final Bundle bundle) {
-            this.bundle = bundle;
-        }
-
-        @Override
-        public void buttonClick(final Button.ClickEvent event) {
-            try {
-                bundle.uninstall();
-            } catch (BundleException e) {
-                notifierService.addNotification(e.getMessage());
-            }
-        }
-    }
-
-    private class UpdateBundleClickListener implements Button.ClickListener {
-
-        private final Bundle bundle;
-
-        public UpdateBundleClickListener(final Bundle bundle) {
-            this.bundle = bundle;
-        }
-
-        @Override
-        public void buttonClick(final Button.ClickEvent event) {
-            try {
-                bundle.update();
-            } catch (BundleException e) {
-                notifierService.addNotification(e.getMessage());
-            }
-        }
-    }
 }
