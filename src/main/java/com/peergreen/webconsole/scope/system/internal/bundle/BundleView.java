@@ -6,6 +6,8 @@ import com.peergreen.webconsole.INotifierService;
 import com.peergreen.webconsole.ISecurityManager;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
+import com.peergreen.webconsole.navigator.NavigableContext;
+import com.peergreen.webconsole.navigator.Navigate;
 import com.peergreen.webconsole.scope.system.SystemTab;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StopBundleClickListener;
@@ -24,7 +26,7 @@ import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.ClassResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
@@ -39,11 +41,14 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @author Mohammed Boukada
  */
 @Extension
-@ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
+@ExtensionPoint(value = "com.peergreen.webconsole.scope.system.internal.SystemScope.tab", alias = "/bundles")
 @SystemTab("OSGi Bundles")
 public class BundleView extends VerticalLayout {
 
@@ -63,6 +68,7 @@ public class BundleView extends VerticalLayout {
     private BundleTracker<BeanItem<BundleItem>> tracker;
 
     private TabSheet tabSheet = new TabSheet();
+    private Map<Long, Component> openTabs = new ConcurrentHashMap<>();
 
     @Ready
     public void createView() {
@@ -225,6 +231,17 @@ public class BundleView extends VerticalLayout {
         tabSheet.setSizeFull();
         tabSheet.addTab(table, "Bundles", new ClassResource(BundleView.class, "/images/22x22/user-home.png"));
         setExpandRatio(tabSheet, 1.5f);
+
+        tabSheet.setCloseHandler(new TabSheet.CloseHandler() {
+            @Override
+            public void onTabClose(TabSheet tabsheet, Component tabContent) {
+                for (Map.Entry<Long, Component> tab : openTabs.entrySet()) {
+                    if (tabContent.equals(tab.getValue()))
+                        openTabs.remove(tab.getKey());
+                }
+                tabsheet.removeComponent(tabContent);
+            }
+        });
     }
 
     @Invalidate
@@ -282,4 +299,27 @@ public class BundleView extends VerticalLayout {
         }
     }
 
+    @Navigate
+    public Component navigate(NavigableContext context) {
+        if (showBundleDetails(context.getPath())) {
+            Long bundleId = Long.parseLong(context.getPath().substring(1));
+            Component tab;
+            if (!openTabs.containsKey(bundleId)) {
+                Bundle bundle = bundleContext.getBundle(bundleId);
+                tab = new BundleTab(bundle, notifierService);
+                tabSheet.addTab(tab,
+                        "Bundle " + bundle.getBundleId(),
+                        new ClassResource(BundleView.class, "/images/22x22/package-x-generic.png")).setClosable(true);
+                openTabs.put(bundleId, tab);
+            } else {
+                tab = openTabs.get(bundleId);
+            }
+            tabSheet.setSelectedTab(tab);
+        }
+        return null;
+    }
+
+    private boolean showBundleDetails(String param) {
+        return param.matches("/[0-9]*");
+    }
 }
