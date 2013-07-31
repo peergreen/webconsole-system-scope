@@ -6,6 +6,7 @@ import com.peergreen.webconsole.INotifierService;
 import com.peergreen.webconsole.ISecurityManager;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
+import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.navigator.NavigableContext;
 import com.peergreen.webconsole.navigator.Navigate;
 import com.peergreen.webconsole.scope.system.SystemTab;
@@ -48,7 +49,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Mohammed Boukada
  */
 @Extension
-@ExtensionPoint(value = "com.peergreen.webconsole.scope.system.internal.SystemScope.tab", alias = "/bundles")
+@ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
+@Navigable("/bundles")
 @SystemTab("OSGi Bundles")
 public class BundleView extends VerticalLayout {
 
@@ -320,6 +322,6 @@ public class BundleView extends VerticalLayout {
     }
 
     private boolean showBundleDetails(String param) {
-        return param.matches("/[0-9]*");
+        return param.matches("/[0-9]+");
     }
 }

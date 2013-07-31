@@ -10,6 +10,7 @@ import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.Scope;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.Unlink;
+import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.navigator.NavigableContext;
 import com.peergreen.webconsole.navigator.Navigate;
 import com.peergreen.webconsole.utils.UrlFragment;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Extension
 @ExtensionPoint("com.peergreen.webconsole.scope")
+@Navigable
 @Scope("system")
 public class SystemScope extends TabSheet {
 
@@ -58,21 +60,29 @@ public class SystemScope extends TabSheet {
         tab.setSizeFull();
         addTab(tab, (String) properties.get("tab.value")).setClosable(true);
         defaultTab.addExtension(tab, (String) properties.get("tab.value"));
-        components.put((String) properties.get(Constants.EXTENSION_ALIAS), tab);
+        String alias = (String) properties.get(Constants.EXTENSION_ALIAS);
+        if (alias != null) {
+            components.put(alias, tab);
+        }
     }
 
     @Unlink("tab")
     public void removeTabs(Component tab, Dictionary properties) {
         removeComponent(tab);
         defaultTab.removeExtension((String) properties.get("tab.value"));
-        components.remove((String) properties.get(Constants.EXTENSION_ALIAS));
+        String alias = (String) properties.get(Constants.EXTENSION_ALIAS);
+        if (alias != null && components.containsKey(alias)){
+            components.remove(alias);
+        }
     }
 
     @Navigate
     public Component navigate(NavigableContext context) {
         Component tab = components.get(UrlFragment.getFirstFragment(context.getPath()));
-        setSelectedTab(tab);
         context.setPath(UrlFragment.subFirstFragment(context.getPath()));
+        if (tab != null) {
+            setSelectedTab(tab);
+        }
         return tab;
     }
 }
