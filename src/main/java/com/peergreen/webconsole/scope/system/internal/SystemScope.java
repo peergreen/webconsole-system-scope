@@ -13,6 +13,8 @@ import com.peergreen.webconsole.Unlink;
 import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.navigator.NavigableContext;
 import com.peergreen.webconsole.navigator.Navigate;
+import com.peergreen.webconsole.vaadin.CloseTabListener;
+import com.peergreen.webconsole.vaadin.SelectedTabListener;
 import com.peergreen.webconsole.utils.UrlFragment;
 import com.peergreen.webconsole.vaadin.DefaultTab;
 import com.vaadin.ui.Component;
@@ -45,14 +47,8 @@ public class SystemScope extends TabSheet {
         defaultTab.setUi(uiContext.getUI());
         addTab(defaultTab, "System", null, 0);
         setSizeFull();
-        setCloseHandler(new TabSheet.CloseHandler() {
-            @Override
-            public void onTabClose(TabSheet tabsheet, com.vaadin.ui.Component tabContent) {
-                notifierService.addNotification("Warning ! You have closed " +
-                        tabsheet.getTab(tabContent).getCaption() + " module");
-                tabsheet.removeComponent(tabContent);
-            }
-        });
+        setCloseHandler(new CloseTabListener(notifierService));
+        addSelectedTabChangeListener(new SelectedTabListener(uiContext.getViewNavigator(), defaultTab));
     }
 
     @Link("tab")

@@ -4,6 +4,7 @@ import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
+import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.scope.system.SystemTab;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
@@ -29,6 +30,7 @@ import org.osgi.framework.ServiceReference;
  */
 @Extension
 @ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
+@Navigable("/services")
 @SystemTab("OSGi Services")
 public class ServiceViewer extends VerticalLayout {
 
