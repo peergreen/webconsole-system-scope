@@ -6,6 +6,7 @@ import com.peergreen.webconsole.INotifierService;
 import com.peergreen.webconsole.ISecurityManager;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
+import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.navigator.NavigableContext;
 import com.peergreen.webconsole.navigator.Navigate;
@@ -14,6 +15,7 @@ import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundle
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StopBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.UninstallBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.UpdateBundleClickListener;
+import com.peergreen.webconsole.vaadin.SelectedTabListener;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
@@ -64,12 +66,15 @@ public class BundleView extends VerticalLayout {
     private ISecurityManager securityManager;
     @Inject
     private INotifierService notifierService;
+    @Inject
+    private UIContext uiContext;
 
     private Table table;
     private BeanItemContainer<BundleItem> data = new BeanItemContainer<>(BundleItem.class);
     private BundleTracker<BeanItem<BundleItem>> tracker;
 
     private TabSheet tabSheet = new TabSheet();
+    private SelectedTabListener selectedTabListener;
     private Map<Long, Component> openTabs = new ConcurrentHashMap<>();
 
     @Ready
@@ -218,12 +223,7 @@ public class BundleView extends VerticalLayout {
                 if (event.isDoubleClick()) {
                     BeanItem<BundleItem> item = (BeanItem<BundleItem>) table.getContainerDataSource().getItem(event.getItemId());
                     Bundle bundle = item.getBean().getBundle();
-
-                    TabSheet.Tab tab = tabSheet.addTab(new BundleTab(bundle, notifierService),
-                                                       "Bundle " + bundle.getBundleId(),
-                                                       new ClassResource(BundleView.class, "/images/22x22/package-x-generic.png"));
-                    tab.setClosable(true);
-                    tabSheet.setSelectedTab(tab);
+                    showBundle(bundle);
                 }
             }
         });
@@ -231,6 +231,9 @@ public class BundleView extends VerticalLayout {
         createBundleTracker();
 
         tabSheet.setSizeFull();
+        selectedTabListener = new SelectedTabListener(uiContext.getViewNavigator());
+        selectedTabListener.addLocation(table, uiContext.getViewNavigator().getLocation(this.getClass().getName()));
+        tabSheet.addSelectedTabChangeListener(selectedTabListener);
         tabSheet.addTab(table, "Bundles", new ClassResource(BundleView.class, "/images/22x22/user-home.png"));
         setExpandRatio(tabSheet, 1.5f);
 
@@ -238,10 +241,12 @@ public class BundleView extends VerticalLayout {
             @Override
             public void onTabClose(TabSheet tabsheet, Component tabContent) {
                 for (Map.Entry<Long, Component> tab : openTabs.entrySet()) {
-                    if (tabContent.equals(tab.getValue()))
+                    if (tabContent.equals(tab.getValue())){
                         openTabs.remove(tab.getKey());
+                    }
                 }
                 tabsheet.removeComponent(tabContent);
+                selectedTabListener.removeLocation(tabContent);
             }
         });
     }
@@ -305,20 +310,25 @@ public class BundleView extends VerticalLayout {
     public Component navigate(NavigableContext context) {
         if (showBundleDetails(context.getPath())) {
             Long bundleId = Long.parseLong(context.getPath().substring(1));
-            Component tab;
-            if (!openTabs.containsKey(bundleId)) {
-                Bundle bundle = bundleContext.getBundle(bundleId);
-                tab = new BundleTab(bundle, notifierService);
-                tabSheet.addTab(tab,
-                        "Bundle " + bundle.getBundleId(),
-                        new ClassResource(BundleView.class, "/images/22x22/package-x-generic.png")).setClosable(true);
-                openTabs.put(bundleId, tab);
-            } else {
-                tab = openTabs.get(bundleId);
-            }
-            tabSheet.setSelectedTab(tab);
+            showBundle(bundleContext.getBundle(bundleId));
         }
         return null;
+    }
+
+    private void showBundle(Bundle bundle) {
+        Component tab;
+        if (!openTabs.containsKey(bundle.getBundleId())) {
+            tab = new BundleTab(bundle, notifierService);
+            tabSheet.addTab(tab,
+                    "Bundle " + bundle.getBundleId(),
+                    new ClassResource(BundleView.class, "/images/22x22/package-x-generic.png")).setClosable(true);
+            openTabs.put(bundle.getBundleId(), tab);
+            selectedTabListener.addLocation(tab, uiContext.getViewNavigator().getLocation(this.getClass().getName())
+                    + "/" + bundle.getBundleId());
+        } else {
+            tab = openTabs.get(bundle.getBundleId());
+        }
+        tabSheet.setSelectedTab(tab);
     }
 
     private boolean showBundleDetails(String param) {

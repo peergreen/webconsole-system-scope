@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SystemScope extends TabSheet {
 
     private DefaultTab defaultTab = new DefaultTab(this);
+    private SelectedTabListener selectedTabListener;
     private Map<String, Component> components = new ConcurrentHashMap<>();
 
     @Inject
@@ -45,10 +46,12 @@ public class SystemScope extends TabSheet {
     @Ready
     public void init() {
         defaultTab.setUi(uiContext.getUI());
+        selectedTabListener = new SelectedTabListener(uiContext.getViewNavigator());
+        selectedTabListener.addLocation(defaultTab, uiContext.getViewNavigator().getLocation(this.getClass().getName()));
         addTab(defaultTab, "System", null, 0);
         setSizeFull();
         setCloseHandler(new CloseTabListener(notifierService));
-        addSelectedTabChangeListener(new SelectedTabListener(uiContext.getViewNavigator(), defaultTab));
+        addSelectedTabChangeListener(selectedTabListener);
     }
 
     @Link("tab")
@@ -58,6 +61,7 @@ public class SystemScope extends TabSheet {
         defaultTab.addExtension(tab, (String) properties.get("tab.value"));
         String alias = (String) properties.get(Constants.EXTENSION_ALIAS);
         if (alias != null) {
+            selectedTabListener.addLocation(tab, uiContext.getViewNavigator().getLocation(tab.getClass().getName()));
             components.put(alias, tab);
         }
     }
@@ -68,6 +72,7 @@ public class SystemScope extends TabSheet {
         defaultTab.removeExtension((String) properties.get("tab.value"));
         String alias = (String) properties.get(Constants.EXTENSION_ALIAS);
         if (alias != null && components.containsKey(alias)){
+            selectedTabListener.removeLocation(tab);
             components.remove(alias);
         }
     }
