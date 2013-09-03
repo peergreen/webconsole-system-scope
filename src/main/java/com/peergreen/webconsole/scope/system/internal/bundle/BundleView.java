@@ -8,7 +8,7 @@ import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.navigator.Navigable;
-import com.peergreen.webconsole.navigator.NavigableContext;
+import com.peergreen.webconsole.navigator.NavigationContext;
 import com.peergreen.webconsole.navigator.Navigate;
 import com.peergreen.webconsole.scope.system.SystemTab;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundleClickListener;
@@ -307,7 +307,7 @@ public class BundleView extends VerticalLayout {
     }
 
     @Navigate
-    public Component navigate(NavigableContext context) {
+    public Component navigate(NavigationContext context) {
         if (showBundleDetails(context.getPath())) {
             Long bundleId = Long.parseLong(context.getPath().substring(1));
             showBundle(bundleContext.getBundle(bundleId));

@@ -11,7 +11,7 @@ import com.peergreen.webconsole.Scope;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.Unlink;
 import com.peergreen.webconsole.navigator.Navigable;
-import com.peergreen.webconsole.navigator.NavigableContext;
+import com.peergreen.webconsole.navigator.NavigationContext;
 import com.peergreen.webconsole.navigator.Navigate;
 import com.peergreen.webconsole.vaadin.CloseTabListener;
 import com.peergreen.webconsole.vaadin.SelectedTabListener;
@@ -78,7 +78,7 @@ public class SystemScope extends TabSheet {
     }
 
     @Navigate
-    public Component navigate(NavigableContext context) {
+    public Component navigate(NavigationContext context) {
         Component tab = components.get(UrlFragment.getFirstFragment(context.getPath()));
         context.setPath(UrlFragment.subFirstFragment(context.getPath()));
         if (tab != null) {
