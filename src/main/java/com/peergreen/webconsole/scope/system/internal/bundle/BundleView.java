@@ -5,17 +5,16 @@ import com.peergreen.webconsole.ExtensionPoint;
 import com.peergreen.webconsole.INotifierService;
 import com.peergreen.webconsole.ISecurityManager;
 import com.peergreen.webconsole.Inject;
-import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.navigator.Navigable;
-import com.peergreen.webconsole.navigator.NavigationContext;
 import com.peergreen.webconsole.navigator.Navigate;
-import com.peergreen.webconsole.scope.system.SystemTab;
+import com.peergreen.webconsole.navigator.NavigationContext;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StopBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.UninstallBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.UpdateBundleClickListener;
-import com.peergreen.webconsole.vaadin.SelectedTabListener;
+import com.peergreen.webconsole.vaadin.tabs.SelectedTabListener;
+import com.peergreen.webconsole.vaadin.tabs.Tab;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
@@ -36,14 +35,14 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-
-import org.apache.felix.ipojo.annotations.Invalidate;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -53,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Extension
 @ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
 @Navigable("/bundles")
-@SystemTab("OSGi Bundles")
+@Tab("OSGi Bundles")
 public class BundleView extends VerticalLayout {
 
     private static final String BUNDLE_ID_COLUMN = "bundleId";
@@ -77,7 +76,7 @@ public class BundleView extends VerticalLayout {
     private SelectedTabListener selectedTabListener;
     private Map<Long, Component> openTabs = new ConcurrentHashMap<>();
 
-    @Ready
+    @PostConstruct
     public void createView() {
         setMargin(true);
         setSpacing(true);
@@ -251,7 +250,7 @@ public class BundleView extends VerticalLayout {
         });
     }
 
-    @Invalidate
+    @PreDestroy
     public void close() {
         tracker.close();
     }

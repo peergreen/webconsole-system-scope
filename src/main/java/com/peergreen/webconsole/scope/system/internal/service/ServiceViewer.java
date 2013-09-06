@@ -3,9 +3,8 @@ package com.peergreen.webconsole.scope.system.internal.service;
 import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;
 import com.peergreen.webconsole.Inject;
-import com.peergreen.webconsole.Ready;
 import com.peergreen.webconsole.navigator.Navigable;
-import com.peergreen.webconsole.scope.system.SystemTab;
+import com.peergreen.webconsole.vaadin.tabs.Tab;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItemContainer;
@@ -25,13 +24,15 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+import javax.annotation.PostConstruct;
+
 /**
  * @author Mohammed Boukada
  */
 @Extension
 @ExtensionPoint("com.peergreen.webconsole.scope.system.internal.SystemScope.tab")
 @Navigable("/services")
-@SystemTab("OSGi Services")
+@Tab("OSGi Services")
 public class ServiceViewer extends VerticalLayout {
 
     public static final String SERVICE_ID_COLUMN = "serviceId";
@@ -45,7 +46,7 @@ public class ServiceViewer extends VerticalLayout {
     private BeanItemContainer<ServiceReferenceItem> data = new BeanItemContainer<>(ServiceReferenceItem.class);
     private Table table;
 
-    @Ready
+    @PostConstruct
     public void createView() {
         setMargin(true);
         setSpacing(true);
