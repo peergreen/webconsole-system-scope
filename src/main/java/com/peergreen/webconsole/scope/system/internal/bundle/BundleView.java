@@ -35,6 +35,7 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -115,8 +116,8 @@ public class BundleView extends VerticalLayout {
 
         filter.setInputPrompt("Filter");
         filter.addShortcutListener(new ShortcutListener("Clear",
-                                                        ShortcutAction.KeyCode.ESCAPE,
-                                                        null) {
+                ShortcutAction.KeyCode.ESCAPE,
+                null) {
             @Override
             public void handleAction(Object sender, Object target) {
                 filter.setValue("");
@@ -240,7 +241,7 @@ public class BundleView extends VerticalLayout {
             @Override
             public void onTabClose(TabSheet tabsheet, Component tabContent) {
                 for (Map.Entry<Long, Component> tab : openTabs.entrySet()) {
-                    if (tabContent.equals(tab.getValue())){
+                    if (tabContent.equals(tab.getValue())) {
                         openTabs.remove(tab.getKey());
                     }
                 }

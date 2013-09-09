@@ -70,8 +70,8 @@ public class FilteredPackageTable extends VerticalLayout {
             }
         });
         filter.addShortcutListener(new ShortcutListener("Clear",
-                                                        ShortcutAction.KeyCode.ESCAPE,
-                                                        null) {
+                ShortcutAction.KeyCode.ESCAPE,
+                null) {
             @Override
             public void handleAction(Object sender, Object target) {
                 filter.setValue("");

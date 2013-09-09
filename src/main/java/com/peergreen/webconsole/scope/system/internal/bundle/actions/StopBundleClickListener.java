@@ -7,10 +7,10 @@ import com.peergreen.webconsole.INotifierService;
 import com.vaadin.ui.Button;
 
 /**
-* User: guillaume
-* Date: 22/07/13
-* Time: 13:18
-*/
+ * User: guillaume
+ * Date: 22/07/13
+ * Time: 13:18
+ */
 public class StopBundleClickListener implements Button.ClickListener {
 
     private final Bundle bundle;

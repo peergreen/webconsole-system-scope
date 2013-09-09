@@ -20,6 +20,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -85,7 +86,7 @@ public class ServiceViewer extends VerticalLayout {
 
         filter.setInputPrompt("Filter");
         filter.addShortcutListener(new ShortcutListener("Clear",
-                                                        ShortcutAction.KeyCode.ESCAPE, null) {
+                ShortcutAction.KeyCode.ESCAPE, null) {
             @Override
             public void handleAction(Object sender, Object target) {
                 filter.setValue("");
@@ -121,7 +122,7 @@ public class ServiceViewer extends VerticalLayout {
 
         table.setContainerDataSource(data);
         table.setImmediate(true);
-        table.setVisibleColumns(new Object[] {SERVICE_ID_COLUMN, INTERFACES_COLUMN, BUNDLE_INFO_COLUMN});
+        table.setVisibleColumns(new Object[]{SERVICE_ID_COLUMN, INTERFACES_COLUMN, BUNDLE_INFO_COLUMN});
 
         table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override

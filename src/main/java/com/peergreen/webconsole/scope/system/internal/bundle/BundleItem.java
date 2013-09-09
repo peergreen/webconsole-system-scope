@@ -28,7 +28,7 @@ public class BundleItem {
         String name = BundleHelper.getHeader(bundle, Constants.BUNDLE_NAME);
         if (name != null) {
             return new Label(format("%s <i>(%s)</i>", name, bundle.getSymbolicName()),
-                             ContentMode.HTML);
+                    ContentMode.HTML);
         }
         return new Label(bundle.getSymbolicName());
     }

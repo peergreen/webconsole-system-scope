@@ -26,10 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
@@ -110,9 +107,9 @@ public class BundleTab extends VerticalLayout {
         header.setMargin(true);
 
         Label title = new Label(format("Bundle %d: %s (%s)",
-                                       bundle.getBundleId(),
-                                       getHeader(bundle, Constants.BUNDLE_NAME),
-                                       bundle.getVersion()));
+                bundle.getBundleId(),
+                getHeader(bundle, Constants.BUNDLE_NAME),
+                bundle.getVersion()));
         title.addStyleName("h1");
         header.addComponent(title);
         header.setComponentAlignment(title, Alignment.MIDDLE_LEFT);
@@ -173,16 +170,16 @@ public class BundleTab extends VerticalLayout {
         table.addContainerProperty("label", Label.class, null);
         table.addContainerProperty("value", Label.class, null);
 
-        table.addItem(new Object[] {label("Bundle ID"), label(String.valueOf(bundle.getBundleId()))}, "bundle.id");
+        table.addItem(new Object[]{label("Bundle ID"), label(String.valueOf(bundle.getBundleId()))}, "bundle.id");
         for (Map.Entry<String, String> entry : HEADERS.entrySet()) {
             String value = getHeader(bundle, entry.getKey());
             if (value != null) {
-                table.addItem(new Object[] {label(entry.getValue()), label(value)}, entry.getKey());
+                table.addItem(new Object[]{label(entry.getValue()), label(value)}, entry.getKey());
             }
         }
-        table.addItem(new Object[] {label("Location"), label(bundle.getLocation())}, "bundle.location");
+        table.addItem(new Object[]{label("Location"), label(bundle.getLocation())}, "bundle.location");
         Date date = new Date(bundle.getLastModified());
-        table.addItem(new Object[] {label("Last Modified"), label(date.toString())}, "last.modified");
+        table.addItem(new Object[]{label("Last Modified"), label(date.toString())}, "last.modified");
 
         // ----------------------------------------------------
         // Packages Section
@@ -202,14 +199,16 @@ public class BundleTab extends VerticalLayout {
         addComponent(packagesSection);
 
         BundleWiring wiring = bundle.adapt(BundleWiring.class);
-        for (BundleCapability capability : wiring.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE)) {
-            String name = (String) capability.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
-            Version version = (Version) capability.getAttributes().get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-            exported.addPackage(format("%s (%s)", name, version));
-        }
-        for (BundleRequirement requirement : wiring.getRequirements(PackageNamespace.PACKAGE_NAMESPACE)) {
-            String filter = requirement.getDirectives().get(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE);
-            imported.addPackage(filter);
+        if (wiring != null) {
+            for (BundleCapability capability : wiring.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE)) {
+                String name = (String) capability.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
+                Version version = (Version) capability.getAttributes().get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                exported.addPackage(format("%s (%s)", name, version));
+            }
+            for (BundleRequirement requirement : wiring.getRequirements(PackageNamespace.PACKAGE_NAMESPACE)) {
+                String filter = requirement.getDirectives().get(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE);
+                imported.addPackage(filter);
+            }
         }
 
         // ----------------------------------------------------
@@ -259,9 +258,9 @@ public class BundleTab extends VerticalLayout {
         manifest.addContainerProperty("name", String.class, null);
         manifest.addContainerProperty("value", String.class, null);
 
-        Dictionary<String,String> headers = bundle.getHeaders();
+        Dictionary<String, String> headers = bundle.getHeaders();
         for (String key : Collections.list(headers.keys())) {
-            manifest.addItem(new Object[] {key, headers.get(key)}, null);
+            manifest.addItem(new Object[]{key, headers.get(key)}, null);
         }
 
         Section manifestSection = new Section("Manifest", manifest);
