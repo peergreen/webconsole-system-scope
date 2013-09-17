@@ -3,7 +3,7 @@ package com.peergreen.webconsole.scope.system.internal.bundle.actions;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
-import com.peergreen.webconsole.INotifierService;
+import com.peergreen.webconsole.notifier.INotifierService;
 import com.vaadin.ui.Button;
 
 /**

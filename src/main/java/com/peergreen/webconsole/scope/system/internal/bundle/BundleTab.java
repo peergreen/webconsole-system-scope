@@ -37,7 +37,7 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
 
-import com.peergreen.webconsole.INotifierService;
+import com.peergreen.webconsole.notifier.INotifierService;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StopBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.UninstallBundleClickListener;

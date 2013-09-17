@@ -1,14 +1,25 @@
 package com.peergreen.webconsole.scope.system.internal.bundle;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.util.tracker.BundleTracker;
+import org.osgi.util.tracker.BundleTrackerCustomizer;
+
 import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;
-import com.peergreen.webconsole.INotifierService;
 import com.peergreen.webconsole.ISecurityManager;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.navigator.Navigate;
 import com.peergreen.webconsole.navigator.NavigationContext;
+import com.peergreen.webconsole.notifier.INotifierService;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StartBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.StopBundleClickListener;
 import com.peergreen.webconsole.scope.system.internal.bundle.actions.UninstallBundleClickListener;
@@ -35,17 +46,6 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.util.tracker.BundleTracker;
-import org.osgi.util.tracker.BundleTrackerCustomizer;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Mohammed Boukada
