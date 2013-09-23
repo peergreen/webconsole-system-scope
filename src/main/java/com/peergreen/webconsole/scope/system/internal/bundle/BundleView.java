@@ -24,7 +24,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 
 import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;
-import com.peergreen.webconsole.ISecurityManager;
+import com.peergreen.webconsole.security.ISecurityManager;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.navigator.Navigable;
