@@ -87,4 +87,12 @@ public class ServiceReferenceItem {
         interfaces.addAll(Arrays.asList(classes));
         return interfaces.toString();
     }
+
+    public Bundle getBundle() {
+        return reference.getBundle();
+    }
+
+    public ServiceReference<?> getReference() {
+        return reference;
+    }
 }

@@ -15,6 +15,9 @@ import com.peergreen.webconsole.Extension;
 import com.peergreen.webconsole.ExtensionPoint;
 import com.peergreen.webconsole.Inject;
 import com.peergreen.webconsole.navigator.Navigable;
+import com.peergreen.webconsole.scope.system.internal.service.filter.BundleFilter;
+import com.peergreen.webconsole.scope.system.internal.service.filter.InterfacesFilter;
+import com.peergreen.webconsole.scope.system.internal.service.filter.ServicePropertiesFilter;
 import com.peergreen.webconsole.vaadin.tabs.Tab;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
@@ -85,10 +88,12 @@ public class ServiceViewer extends VerticalLayout {
             @Override
             public void textChange(final FieldEvents.TextChangeEvent event) {
                 data.removeAllContainerFilters();
+                String trimmed = event.getText().trim();
                 Container.Filter or = new Or(
-                        new SimpleStringFilter(SERVICE_ID_COLUMN, event.getText().trim(), true, false),
-                        new SimpleStringFilter(INTERFACES_COLUMN, event.getText().trim(), true, false),
-                        new SimpleStringFilter(BUNDLE_INFO_COLUMN, event.getText().trim(), true, false)
+                        new SimpleStringFilter(SERVICE_ID_COLUMN, trimmed, true, false),
+                        new InterfacesFilter(trimmed),
+                        new BundleFilter(trimmed),
+                        new ServicePropertiesFilter(trimmed)
                 );
 
                 data.addContainerFilter(or);
@@ -133,7 +138,7 @@ public class ServiceViewer extends VerticalLayout {
 
         table.setContainerDataSource(data);
         table.setImmediate(true);
-        table.setVisibleColumns(new Object[]{SERVICE_ID_COLUMN, INTERFACES_COLUMN, BUNDLE_INFO_COLUMN});
+        table.setVisibleColumns(SERVICE_ID_COLUMN, INTERFACES_COLUMN, BUNDLE_INFO_COLUMN);
 
         table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
