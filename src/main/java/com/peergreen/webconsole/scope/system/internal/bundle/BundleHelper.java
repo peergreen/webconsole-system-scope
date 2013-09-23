@@ -28,4 +28,22 @@ public class BundleHelper {
     }
 
 
+    public static String getStateString(int state) {
+        switch (state) {
+            case Bundle.INSTALLED:
+                return "INSTALLED";
+            case Bundle.RESOLVED:
+                return "RESOLVED";
+            case Bundle.STARTING:
+                return "STARTING";
+            case Bundle.ACTIVE:
+                return "ACTIVE";
+            case Bundle.STOPPING:
+                return "STOPPING";
+            case Bundle.UNINSTALLED:
+                return "UNINSTALLED";
+            default:
+                return "UNKNOWN";
+        }
+    }
 }

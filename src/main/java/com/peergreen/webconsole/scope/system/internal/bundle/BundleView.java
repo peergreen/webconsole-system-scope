@@ -38,7 +38,6 @@ import com.peergreen.webconsole.scope.system.internal.bundle.actions.UpdateBundl
 import com.peergreen.webconsole.vaadin.tabs.SelectedTabListener;
 import com.peergreen.webconsole.vaadin.tabs.Tab;
 import com.vaadin.data.Container;
-import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.filter.Or;
@@ -68,9 +67,11 @@ import com.vaadin.ui.VerticalLayout;
 public class BundleView extends VerticalLayout {
 
     private static final String BUNDLE_ID_COLUMN = "bundleId";
-    private static final String NAME_COLUMN = "bundleName";
+    private static final String BUNDLE_NAME_COLUMN = "bundleName";
+    private static final String BUNDLE_SYMBOLICNAME_COLUMN = "bundleSymbolicName";
+    private static final String PRETTY_NAME_COLUMN = "prettyBundleName";
     private static final String VERSION_COLUMN = "version";
-    private static final String STATE_COLUMN = "state";
+    private static final String PRETTY_STATE_COLUMN = "prettyState";
     @Inject
     private BundleContext bundleContext;
     @Inject
@@ -114,11 +115,13 @@ public class BundleView extends VerticalLayout {
             @Override
             public void textChange(final FieldEvents.TextChangeEvent event) {
                 data.removeAllContainerFilters();
+                String trimmed = event.getText().trim();
                 Container.Filter or = new Or(
-                        new SimpleStringFilter(BUNDLE_ID_COLUMN, event.getText().trim(), true, false),
-                        new SimpleStringFilter(NAME_COLUMN, event.getText().trim(), true, false),
-                        new SimpleStringFilter(VERSION_COLUMN, event.getText().trim(), true, false),
-                        new SimpleStringFilter(STATE_COLUMN, event.getText().trim(), true, false)
+                        new SimpleStringFilter(BUNDLE_ID_COLUMN, trimmed, true, false),
+                        new SimpleStringFilter(BUNDLE_NAME_COLUMN, trimmed, true, false),
+                        new SimpleStringFilter(BUNDLE_SYMBOLICNAME_COLUMN, trimmed, true, false),
+                        new SimpleStringFilter(VERSION_COLUMN, trimmed, true, false),
+                        new SimpleStringFilter(PRETTY_STATE_COLUMN, trimmed, true, false)
                 );
 
                 data.addContainerFilter(or);
@@ -144,31 +147,23 @@ public class BundleView extends VerticalLayout {
 
         addComponent(tabSheet);
 
-        table = new Table() {
-            @Override
-            protected String formatPropertyValue(final Object rowId, final Object colId, final Property<?> property) {
-                if ("state".equals(colId)) {
-                    return getStateString((Integer) property.getValue());
-                }
-                return super.formatPropertyValue(rowId, colId, property);
-            }
-        };
+        table = new Table();
         table.setContainerDataSource(data);
         table.setSizeFull();
         table.setSortContainerPropertyId(BUNDLE_ID_COLUMN);
         table.setSortAscending(true);
         table.setImmediate(true);
-        table.setColumnHeader("bundleId", "Bundle ID");
-        table.setColumnHeader("bundleName", "Bundle Name");
-        table.setColumnHeader("version", "Version");
-        table.setColumnHeader("state", "State");
+        table.setColumnHeader(BUNDLE_ID_COLUMN, "Bundle ID");
+        table.setColumnHeader(PRETTY_NAME_COLUMN, "Bundle Name");
+        table.setColumnHeader(VERSION_COLUMN, "Version");
+        table.setColumnHeader(PRETTY_STATE_COLUMN, "State");
         table.setColumnHeader("actions", "Actions");
 
-        table.setColumnWidth("bundleId", 100);
+        table.setColumnWidth(BUNDLE_ID_COLUMN, 100);
 
-        table.setColumnAlignment("bundleId", Table.Align.CENTER);
-        table.setColumnAlignment("state", Table.Align.CENTER);
-        table.setColumnAlignment("version", Table.Align.CENTER);
+        table.setColumnAlignment(BUNDLE_ID_COLUMN, Table.Align.CENTER);
+        table.setColumnAlignment(PRETTY_STATE_COLUMN, Table.Align.CENTER);
+        table.setColumnAlignment(VERSION_COLUMN, Table.Align.CENTER);
 
         table.addGeneratedColumn("actions", new Table.ColumnGenerator() {
             @Override
@@ -176,10 +171,9 @@ public class BundleView extends VerticalLayout {
                 HorizontalLayout layout = new HorizontalLayout();
                 BeanItem<BundleItem> item = (BeanItem<BundleItem>) source.getContainerDataSource().getItem(itemId);
                 Bundle bundle = item.getBean().getBundle();
-                int state = bundle.getState();
                 if (BundleHelper.isState(bundle, Bundle.INSTALLED) || BundleHelper.isState(bundle, Bundle.RESOLVED)) {
                     Button changeState = new Button();
-                    changeState.addClickListener(new StartBundleClickListener(item.getBean().getBundle(), notifierService));
+                    changeState.addClickListener(new StartBundleClickListener(bundle, notifierService));
                     //changeState.addStyleName("no-padding");
                     changeState.setCaption("Start");
                     //changeState.setIcon(new ClassResource(BundleViewer.class, "/images/go-next.png"));
@@ -190,7 +184,7 @@ public class BundleView extends VerticalLayout {
                 }
                 if (BundleHelper.isState(bundle, Bundle.ACTIVE)) {
                     Button changeState = new Button();
-                    changeState.addClickListener(new StopBundleClickListener(item.getBean().getBundle(), notifierService));
+                    changeState.addClickListener(new StopBundleClickListener(bundle, notifierService));
                     //changeState.addStyleName("no-padding");
                     changeState.setCaption("Stop");
                     if (!securityManager.isUserInRole("admin")) {
@@ -202,7 +196,7 @@ public class BundleView extends VerticalLayout {
 
                 // Update
                 Button update = new Button();
-                update.addClickListener(new UpdateBundleClickListener(item.getBean().getBundle(), notifierService));
+                update.addClickListener(new UpdateBundleClickListener(bundle, notifierService));
                 //update.addStyleName("no-padding");
                 update.setCaption("Update");
                 if (!securityManager.isUserInRole("admin")) {
@@ -213,7 +207,7 @@ public class BundleView extends VerticalLayout {
 
                 // Trash
                 Button trash = new Button();
-                trash.addClickListener(new UninstallBundleClickListener(item.getBean().getBundle(), notifierService));
+                trash.addClickListener(new UninstallBundleClickListener(bundle, notifierService));
                 //trash.addStyleName("no-padding");
                 trash.setCaption("Delete");
                 if (!securityManager.isUserInRole("admin")) {
@@ -226,7 +220,7 @@ public class BundleView extends VerticalLayout {
             }
         });
 
-        table.setVisibleColumns("bundleId", "bundleName", "version", "state", "actions");
+        table.setVisibleColumns(BUNDLE_ID_COLUMN, PRETTY_NAME_COLUMN, VERSION_COLUMN, PRETTY_STATE_COLUMN, "actions");
 
         table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
@@ -296,25 +290,6 @@ public class BundleView extends VerticalLayout {
                 Bundle.STARTING |
                 Bundle.ACTIVE |
                 Bundle.UNINSTALLED;
-    }
-
-    private String getStateString(int state) {
-        switch (state) {
-            case Bundle.INSTALLED:
-                return "INSTALLED";
-            case Bundle.RESOLVED:
-                return "RESOLVED";
-            case Bundle.STARTING:
-                return "STARTING";
-            case Bundle.ACTIVE:
-                return "ACTIVE";
-            case Bundle.STOPPING:
-                return "STOPPING";
-            case Bundle.UNINSTALLED:
-                return "UNINSTALLED";
-            default:
-                return "UNKNOWN";
-        }
     }
 
     @Navigate

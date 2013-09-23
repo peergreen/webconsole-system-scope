@@ -26,22 +26,36 @@ import com.vaadin.ui.Label;
  */
 public class BundleItem {
     private final Bundle bundle;
+    private final Label prettyBundleName;
+    private final String name;
 
     public BundleItem(final Bundle bundle) {
         this.bundle = bundle;
+        String name = BundleHelper.getHeader(bundle, Constants.BUNDLE_NAME);
+        if (name != null) {
+            this.name = name;
+            prettyBundleName = new Label(format("%s <i>(%s)</i>", name, bundle.getSymbolicName()),
+                                         ContentMode.HTML);
+        } else {
+            this.name = "N/A";
+            prettyBundleName = new Label(bundle.getSymbolicName());
+        }
     }
 
     public long getBundleId() {
         return bundle.getBundleId();
     }
 
-    public Label getBundleName() {
-        String name = BundleHelper.getHeader(bundle, Constants.BUNDLE_NAME);
-        if (name != null) {
-            return new Label(format("%s <i>(%s)</i>", name, bundle.getSymbolicName()),
-                    ContentMode.HTML);
-        }
-        return new Label(bundle.getSymbolicName());
+    public Label getPrettyBundleName() {
+        return prettyBundleName;
+    }
+
+    public String getBundleName() {
+        return name;
+    }
+
+    public String getBundleSymbolicName() {
+        return bundle.getSymbolicName();
     }
 
     public String getVersion() {
@@ -50,6 +64,10 @@ public class BundleItem {
 
     public int getState() {
         return bundle.getState();
+    }
+
+    public String getPrettyState() {
+        return BundleHelper.getStateString(getState());
     }
 
     public Bundle getBundle() {
