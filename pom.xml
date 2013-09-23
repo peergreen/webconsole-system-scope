@@ -24,6 +24,10 @@
   <name>Peergreen Web Console :: System Scope</name>
   <packaging>bundle</packaging>
 
+  <properties>
+    <apache-rat-plugin.ignoreErrors>false</apache-rat-plugin.ignoreErrors>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.peergreen.webconsole</groupId>
