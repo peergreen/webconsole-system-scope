@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -64,6 +65,8 @@ public class ShellConsoleView extends VerticalLayout {
     private INotifierService notifier;
 
     private CommandSession session;
+
+    private PrintStream printStream;
 
     @PostConstruct
     public void createView() {
@@ -131,9 +134,9 @@ public class ShellConsoleView extends VerticalLayout {
         setExpandRatio(panel, 1.5f);
 
         OutputStream out = new HtmlAnsiOutputStream(new LabelOutputStream(console, panel));
-        final PrintStream ps = new PrintStream(out);
+        this.printStream = new PrintStream(out);
 
-        session = processor.createSession(new ByteArrayInputStream("".getBytes()), ps, ps);
+        session = processor.createSession(new ByteArrayInputStream("".getBytes()), printStream, printStream);
 
         final TextField input = new TextField();
         input.setWidth("100%");
@@ -144,17 +147,17 @@ public class ShellConsoleView extends VerticalLayout {
             public void handleAction(Object sender, Object target) {
                 try {
                     String value = input.getValue();
-                    ps.printf(">$ %s\n", value);
+                    printStream.printf(">$ %s\n", value);
                     session.execute(value);
                 } catch (Exception e) {
-                    printException(ps, e);
+                    printException(printStream, e);
                 }
                 input.setValue("");
             }
         });
         addComponent(input);
 
-        doSessionBranding(ps);
+        doSessionBranding(printStream);
     }
 
     private void printException(final PrintStream ps, final Exception e) {
@@ -167,6 +170,7 @@ public class ShellConsoleView extends VerticalLayout {
     @PreDestroy
     public void close() {
         session.close();
+        printStream.close();
     }
 
 }
