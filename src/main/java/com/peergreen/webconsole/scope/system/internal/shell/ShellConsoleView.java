@@ -33,13 +33,13 @@ import com.peergreen.webconsole.UIContext;
 import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.notifier.INotifierService;
 import com.peergreen.webconsole.vaadin.tabs.Tab;
+import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutListener;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Panel;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -121,19 +121,21 @@ public class ShellConsoleView extends VerticalLayout {
 
     private void initConsole() {
 
-        Label console = new Label();
-        console.setContentMode(ContentMode.HTML);
-        console.setSizeUndefined();
-        console.addStyleName("console-font");
+        Table table = new Table();
+        table.addStyleName("console-font");
+        table.addStyleName("borderless");
+        table.setColumnHeaderMode(Table.ColumnHeaderMode.HIDDEN);
+        IndexedContainer container = new IndexedContainer();
+        table.setContainerDataSource(container);
+        table.setImmediate(true);
+        table.setSizeFull();
+        table.addContainerProperty("line", Label.class, null);
 
-        Panel panel = new Panel(console);
-        panel.setSizeFull();
-
-        addComponent(panel);
+        addComponent(table);
         // Magic number: use all the empty space
-        setExpandRatio(panel, 1.5f);
+        setExpandRatio(table, 1.5f);
 
-        OutputStream out = new HtmlAnsiOutputStream(new LabelOutputStream(console, panel));
+        OutputStream out = new HtmlAnsiOutputStream(new WebConsoleOutputStream(table, container));
         this.printStream = new PrintStream(out);
 
         session = processor.createSession(new ByteArrayInputStream("".getBytes()), printStream, printStream);
@@ -148,7 +150,11 @@ public class ShellConsoleView extends VerticalLayout {
                 try {
                     String value = input.getValue();
                     printStream.printf(">$ %s\n", value);
-                    session.execute(value);
+                    Object result = session.execute(value);
+                    //session.put(Constants.LAST_RESULT_VARIABLE, result);
+                    if (result != null) {
+                        session.getConsole().println(session.format(result, Converter.INSPECT));
+                    }
                 } catch (Exception e) {
                     printException(printStream, e);
                 }
