@@ -27,7 +27,7 @@ import com.vaadin.ui.Component;
 @Extension
 @ExtensionPoint("com.peergreen.webconsole.scope")
 @Navigable
-@Scope("system")
+@Scope(value = "system", iconClass = "icon-system")
 public class SystemScope extends TabScope {
 
     public SystemScope() {
