@@ -73,7 +73,7 @@ public class ShellConsoleView extends VerticalLayout {
         setMargin(true);
         setSpacing(true);
 
-        context.getUI().getPage().getStyles().add(".console-font {font-family: Monaco, Menlo, Consolas, monospace !important; font-size:small !important;}");
+        context.getUI().getPage().getStyles().add(".console-font {font-family: Menlo, Consolas, monospace !important; font-size:small !important;}");
 
         initHeader();
         initConsole();
