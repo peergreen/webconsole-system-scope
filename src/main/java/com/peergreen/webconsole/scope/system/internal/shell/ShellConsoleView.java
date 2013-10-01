@@ -34,6 +34,7 @@ import com.peergreen.webconsole.navigator.Navigable;
 import com.peergreen.webconsole.notifier.INotifierService;
 import com.peergreen.webconsole.vaadin.tabs.Tab;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.event.FieldEvents;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Alignment;
@@ -143,8 +144,10 @@ public class ShellConsoleView extends VerticalLayout {
         final TextField input = new TextField();
         input.setWidth("100%");
         input.setInputPrompt(">$ ");
-        input.addShortcutListener(new ShortcutListener("Execute",
-                                                       ShortcutAction.KeyCode.ENTER, null) {
+
+        final ShortcutListener shortcut = new ShortcutListener("Execute",
+                                                               ShortcutAction.KeyCode.ENTER,
+                                                               null) {
             @Override
             public void handleAction(Object sender, Object target) {
                 try {
@@ -160,7 +163,22 @@ public class ShellConsoleView extends VerticalLayout {
                 }
                 input.setValue("");
             }
+        };
+
+        // Install the shortcut listener only when the input text-field has the focus
+        input.addFocusListener(new FieldEvents.FocusListener() {
+            @Override
+            public void focus(final FieldEvents.FocusEvent event) {
+                input.addShortcutListener(shortcut);
+            }
         });
+        input.addBlurListener(new FieldEvents.BlurListener() {
+            @Override
+            public void blur(final FieldEvents.BlurEvent event) {
+                input.removeShortcutListener(shortcut);
+            }
+        });
+
         addComponent(input);
 
         doSessionBranding(printStream);
