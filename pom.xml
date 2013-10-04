@@ -30,25 +30,34 @@
     <apache-rat-plugin.ignoreErrors>false</apache-rat-plugin.ignoreErrors>
   </properties>
 
+  <scm>
+    <connection>scm:git:https://forge.peergreen.com/git/git/webconsole/system-scope.git</connection>
+    <developerConnection>scm:git:https://forge.peergreen.com/git/git/webconsole/system-scope.git</developerConnection>
+    <url>https://forge.peergreen.com/git/summary/?r=webconsole/system-scope.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <dependencies>
     <dependency>
       <groupId>com.peergreen.webconsole</groupId>
       <artifactId>web-console-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>vaadin-server</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.apache.felix.ipojo.annotations</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
       <version>5.0.0</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-      <version>1.10.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
@@ -88,7 +97,7 @@
       <dependency>
         <groupId>com.peergreen.webconsole</groupId>
         <artifactId>web-console-bom</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0-M1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
